@@ -49,37 +49,29 @@ func (vm *JSDaemon) Call(source string, args ...interface{}) goja.Value {
 
 }
 func (d *JSDaemon) OnDaemonStart() {
-	if d.Manager.Config.OnDaemonStart == "" {
+	if d.Manager.ScriptConfig.OnDaemonStart == "" {
 		return
 	}
 	d.Lock.Lock()
 	defer d.Lock.Unlock()
-	d.Call(d.Manager.Config.OnDaemonStart)
+	d.Call(d.Manager.ScriptConfig.OnDaemonStart)
 }
 func (d *JSDaemon) OnDaemonClose() {
-	if d.Manager.Config.OnDaemonClose == "" {
+	if d.Manager.ScriptConfig.OnDaemonClose == "" {
 		return
 	}
 	d.Lock.Lock()
 	defer d.Lock.Unlock()
-	d.Call(d.Manager.Config.OnDaemonClose)
-}
-func (d *JSDaemon) OnTick() {
-	if d.Manager.Config.OnTick == "" {
-		return
-	}
-	d.Lock.Lock()
-	defer d.Lock.Unlock()
-	d.Call(d.Manager.Config.OnTick)
+	d.Call(d.Manager.ScriptConfig.OnDaemonClose)
 }
 
 func (d *JSDaemon) OnDaemonCommand(cmd string) {
-	if d.Manager.Config.OnTick == "" {
+	if d.Manager.ScriptConfig.OnDaemonCommand == "" {
 		return
 	}
 	d.Lock.Lock()
 	defer d.Lock.Unlock()
-	d.Call(d.Manager.Config.OnTick, cmd)
+	d.Call(d.Manager.ScriptConfig.OnDaemonCommand, cmd)
 }
 func (d *JSDaemon) OnDaemonInitConnect(c *connect.Connect) {
 	runtime := goja.New()
@@ -103,7 +95,7 @@ func (d *JSDaemon) OnDaemonInitConnect(c *connect.Connect) {
 		},
 	})
 	if d.ConnectScript != "" {
-		_, err := vm.runtime.RunScript(d.Manager.Config.ConnectScript, d.ConnectScript)
+		_, err := vm.runtime.RunScript(d.Manager.ScriptConfig.ConnectScript, d.ConnectScript)
 		if err != nil {
 			d.Manager.OnError(err)
 			return
@@ -132,9 +124,9 @@ func (f Factory) Create(m *connect.Manager) (connect.Daemon, error) {
 			Manager: m,
 		},
 	})
-	script := m.Config.DaemonScript
+	script := m.ScriptConfig.DaemonScript
 	if script != "" {
-		data, err := ioutil.ReadFile(util.AppData(script))
+		data, err := ioutil.ReadFile(util.AppData(m.Config.Script, script))
 		if err != nil {
 			return nil, err
 		}
@@ -143,9 +135,9 @@ func (f Factory) Create(m *connect.Manager) (connect.Daemon, error) {
 			return nil, err
 		}
 	}
-	connscript := m.Config.ConnectScript
+	connscript := m.ScriptConfig.ConnectScript
 	if connscript != "" {
-		connscriptdata, err := ioutil.ReadFile(util.AppData(connscript))
+		connscriptdata, err := ioutil.ReadFile(util.AppData(m.Config.Script, connscript))
 		if err != nil {
 			return nil, err
 		}

@@ -48,85 +48,85 @@ func (vm *JSVM) Call(source string, args ...interface{}) goja.Value {
 	return result
 }
 func (v *JSVM) OnConnectStart() bool {
-	if v.Connect.Manager.Config.OnConnectStart == "" {
+	if v.Connect.Manager.ScriptConfig.OnConnectStart == "" {
 		return false
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.Config.OnConnectStart)
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectStart)
 	if result == nil {
 		return false
 	}
 	return result.ToBoolean()
 }
 func (v *JSVM) OnConnectClose() bool {
-	if v.Connect.Manager.Config.OnConnectClose == "" {
+	if v.Connect.Manager.ScriptConfig.OnConnectClose == "" {
 		return false
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
 
-	result := v.Call(v.Connect.Manager.Config.OnConnectClose)
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectClose)
 	if result == nil {
 		return false
 	}
 	return result.ToBoolean()
 }
 func (v *JSVM) OnConnectUserCommand(b *connect.Block) bool {
-	if v.Connect.Manager.Config.OnConnectUserCommand[int(b.Command)] == "" {
+	if v.Connect.Manager.ScriptConfig.OnConnectUserCommand[int(b.Command)] == "" {
 		return false
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.Config.OnConnectUserCommand[int(b.Command)], b.Command, b.Opt, v.runtime.NewArrayBuffer(b.Data))
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserCommand[int(b.Command)], b.Command, b.Opt, v.runtime.NewArrayBuffer(b.Data))
 	if result == nil {
 		return false
 	}
 	return result.ToBoolean()
 }
 func (v *JSVM) OnConnectUserInput(data []byte) bool {
-	if v.Connect.Manager.Config.OnConnectUserInput == "" {
+	if v.Connect.Manager.ScriptConfig.OnConnectUserInput == "" {
 		return false
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.Config.OnConnectUserInput, v.runtime.NewArrayBuffer(data))
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserInput, v.runtime.NewArrayBuffer(data))
 	if result == nil {
 		return false
 	}
 	return result.ToBoolean()
 }
 func (v *JSVM) OnConnectServerCommand(b *connect.Block) bool {
-	if v.Connect.Manager.Config.OnConnectServerCommand[int(b.Command)] == "" {
+	if v.Connect.Manager.ScriptConfig.OnConnectServerCommand[int(b.Command)] == "" {
 		return false
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.Config.OnConnectServerCommand[int(b.Command)], v.output, b.Command, b.Opt, v.runtime.NewArrayBuffer(b.Data), 0)
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectServerCommand[int(b.Command)], v.output, b.Command, b.Opt, v.runtime.NewArrayBuffer(b.Data), 0)
 	if result == nil {
 		return false
 	}
 	return result.ToBoolean()
 }
 func (v *JSVM) OnConnectServerSubNegotiation(b *connect.Block) bool {
-	if v.Connect.Manager.Config.OnConnectServerSubNegotiation[int(b.Opt)] == "" {
+	if v.Connect.Manager.ScriptConfig.OnConnectServerSubNegotiation[int(b.Opt)] == "" {
 		return false
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.Config.OnConnectServerSubNegotiation[int(b.Opt)], v.output, b.Opt, v.runtime.NewArrayBuffer(b.Data), 0)
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectServerSubNegotiation[int(b.Opt)], v.output, b.Opt, v.runtime.NewArrayBuffer(b.Data), 0)
 	if result == nil {
 		return false
 	}
 	return result.ToBoolean()
 }
 func (v *JSVM) OnConnectUserSubNegotiation(b *connect.Block) bool {
-	if v.Connect.Manager.Config.OnConnectUserSubNegotiation[int(b.Opt)] == "" {
+	if v.Connect.Manager.ScriptConfig.OnConnectUserSubNegotiation[int(b.Opt)] == "" {
 		return false
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.Config.OnConnectUserSubNegotiation[int(b.Opt)], b.Opt, v.runtime.NewArrayBuffer(b.Data))
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserSubNegotiation[int(b.Opt)], b.Opt, v.runtime.NewArrayBuffer(b.Data))
 	if result == nil {
 		return false
 	}

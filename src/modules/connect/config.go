@@ -1,21 +1,41 @@
 package connect
 
 import (
-	"mudgateway/modules/app/gatewayconfig"
 	"strconv"
 )
 
 const DefaultTimeoutInSeconds = 10
 
-const DefualtDisplayBufferFlustIntervalInMilliseconds = 500
+const DefualtDisplayBufferFlushIntervalInMilliseconds = 500
 
-type Config struct {
+type ScriptFile struct {
 	Engine                                   string
 	DaemonScript                             string
 	ConnectScript                            string
-	Servers                                  []*gatewayconfig.Server
 	TimeoutInSeconds                         int
-	DisplayBufferFlustIntervalInMilliseconds int
+	DisplayBufferFlushIntervalInMilliseconds int
+	ControlCommand                           []string
+	ReservedCommands                         []string
+	OnConnectStart                           string
+	OnConnectClose                           string
+	OnConnectUserInput                       string
+	OnConnectUserCommand                     map[string]string
+	OnConnectServerCommand                   map[string]string
+	OnConnectUserSubNegotiation              map[string]string
+	OnConnectServerSubNegotiation            map[string]string
+	OnDaemonStart                            string
+	OnDaemonClose                            string
+	OnDaemonConnectStarted                   string
+	OnDaemonConnectClosed                    string
+	OnDaemonCommand                          string
+	OnDaemonInitConnect                      string
+}
+
+type ScriptConfig struct {
+	Engine                                   string
+	DaemonScript                             string
+	ConnectScript                            string
+	DisplayBufferFlushIntervalInMilliseconds int
 	ControlCommand                           map[byte]bool
 	ReservedCommands                         map[byte]bool
 	OnConnectStart                           string
@@ -27,21 +47,28 @@ type Config struct {
 	OnConnectServerSubNegotiation            map[int]string
 	OnDaemonStart                            string
 	OnDaemonClose                            string
-	OnTick                                   string
 	OnDaemonConnectStarted                   string
 	OnDaemonConnectClosed                    string
 	OnDaemonCommand                          string
 	OnDaemonInitConnect                      string
 }
 
-func MustConvert(c *gatewayconfig.Config) *Config {
-	config := &Config{
+func NewScriptConfig() *ScriptConfig {
+	return &ScriptConfig{
+		ControlCommand:                map[byte]bool{},
+		ReservedCommands:              map[byte]bool{},
+		OnConnectUserCommand:          map[int]string{},
+		OnConnectServerCommand:        map[int]string{},
+		OnConnectUserSubNegotiation:   map[int]string{},
+		OnConnectServerSubNegotiation: map[int]string{},
+	}
+}
+func MustConvert(c *ScriptFile) *ScriptConfig {
+	config := &ScriptConfig{
 		Engine:                                   c.Engine,
 		DaemonScript:                             c.DaemonScript,
 		ConnectScript:                            c.ConnectScript,
-		Servers:                                  c.Servers,
-		DisplayBufferFlustIntervalInMilliseconds: c.DisplayBufferFlustIntervalInMilliseconds,
-		TimeoutInSeconds:                         c.TimeoutInSeconds,
+		DisplayBufferFlushIntervalInMilliseconds: c.DisplayBufferFlushIntervalInMilliseconds,
 		ControlCommand:                           map[byte]bool{},
 		ReservedCommands:                         map[byte]bool{},
 		OnConnectStart:                           c.OnConnectStart,
@@ -53,7 +80,6 @@ func MustConvert(c *gatewayconfig.Config) *Config {
 		OnConnectServerSubNegotiation:            map[int]string{},
 		OnDaemonStart:                            c.OnDaemonStart,
 		OnDaemonClose:                            c.OnDaemonClose,
-		OnTick:                                   c.OnTick,
 		OnDaemonConnectStarted:                   c.OnDaemonConnectStarted,
 		OnDaemonConnectClosed:                    c.OnDaemonConnectClosed,
 		OnDaemonCommand:                          c.OnDaemonCommand,

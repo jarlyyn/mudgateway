@@ -111,9 +111,9 @@ func (c *Connect) Start() (bool, error) {
 	}
 	c.MainConnect = bufio.NewReadWriter(bufio.NewReader(main), bufio.NewWriter(main))
 	c.Current.Store(c.MainConnect)
-	t := c.Manager.Config.DisplayBufferFlustIntervalInMilliseconds
+	t := c.Manager.ScriptConfig.DisplayBufferFlushIntervalInMilliseconds
 	if t == 0 {
-		t = DefualtDisplayBufferFlustIntervalInMilliseconds
+		t = DefualtDisplayBufferFlushIntervalInMilliseconds
 	}
 	if t > 0 {
 		c.displayBufferTickerDuraiton = time.Duration(t) * time.Millisecond
@@ -249,7 +249,7 @@ func (c *Connect) ListenUserInput() {
 		case BlockTypeSubNegotiation:
 			c.flushUserinput()
 			last = 0
-			if !c.Manager.Config.ReservedCommands[b.Opt] && !c.Manager.Config.ControlCommand[b.Opt] {
+			if !c.Manager.ScriptConfig.ReservedCommands[b.Opt] && !c.Manager.ScriptConfig.ControlCommand[b.Opt] {
 				result := c.VM.OnConnectUserSubNegotiation(b)
 				if !result {
 					err := c.SendBlockToServer(b)
@@ -387,7 +387,7 @@ func (c *Connect) ListenMainServer() {
 				}
 			}
 		case BlockTypeSubNegotiation:
-			if !c.Manager.Config.ReservedCommands[b.Opt] && !c.Manager.Config.ControlCommand[b.Opt] {
+			if !c.Manager.ScriptConfig.ReservedCommands[b.Opt] && !c.Manager.ScriptConfig.ControlCommand[b.Opt] {
 				result := c.VM.OnConnectServerSubNegotiation(b)
 				if !result {
 					err := c.sendBlockToUser(b)

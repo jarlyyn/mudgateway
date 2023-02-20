@@ -1,18 +1,23 @@
 package connect
 
 import (
+	"fmt"
+	"io/ioutil"
+	"mudgateway/modules/app/gatewayconfig"
 	"net"
 	"sync"
 
+	"github.com/BurntSushi/toml"
 	"github.com/herb-go/util"
 )
 
 type Manager struct {
-	Connects  sync.Map
-	Config    *Config
-	Daemon    Daemon
-	listeners sync.Map
-	Variables sync.Map
+	Connects     sync.Map
+	Config       *gatewayconfig.Config
+	ScriptConfig *ScriptConfig
+	Daemon       Daemon
+	listeners    sync.Map
+	Variables    sync.Map
 }
 
 func (m *Manager) GetVariable(key string) string {
@@ -26,11 +31,43 @@ func (m *Manager) GetVariable(key string) string {
 func (m *Manager) SetVariable(key, value string) {
 	m.Variables.Store(key, value)
 }
-func (m *Manager) Start() error {
-	for _, v := range m.Config.Servers {
+func (m *Manager) Start(c *gatewayconfig.Config) {
+	m.Config = c
+	script := c.Script
+
+	if script != "" {
+		cf := &ScriptFile{}
+		data, err := ioutil.ReadFile(util.AppData(c.Script, "script.toml"))
+		if err != nil {
+			panic(err)
+		}
+		err = toml.Unmarshal(data, cf)
+		if err != nil {
+			panic(err)
+		}
+		m.ScriptConfig = MustConvert(cf)
+		switch m.ScriptConfig.Engine {
+		case "":
+			DefaultManager.Daemon = NopDaemon{}
+		default:
+			f := Factories[m.ScriptConfig.Engine]
+			if f == nil {
+				panic(fmt.Errorf("未知的 脚本引擎:[" + m.ScriptConfig.Engine + "]"))
+			}
+			d, err := f.Create(m)
+			if err != nil {
+				panic(err)
+			}
+			m.Daemon = d
+		}
+	} else {
+		m.ScriptConfig = NewScriptConfig()
+	}
+
+	for _, v := range c.Servers {
 		server, err := net.Listen("tcp", v.Port)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		m.listeners.Store(v.Port, server)
 		port := v.Port
@@ -40,7 +77,7 @@ func (m *Manager) Start() error {
 			m.NewIncome(server, port, main, tags)
 		}()
 	}
-	return nil
+	return
 }
 func (m *Manager) ConnectClosed(id string) {
 	m.Connects.Delete(id)

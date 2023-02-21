@@ -221,6 +221,34 @@ func (a *OutputAPI) WriteEscaped(call goja.FunctionCall, r *goja.Runtime) goja.V
 	return r.ToValue(a.api.WriteEscaped(bs.Bytes()))
 }
 
+type SendAPI struct {
+	api *connect.SendAPI
+}
+
+func (a *SendAPI) WriteRaw(call goja.FunctionCall, r *goja.Runtime) goja.Value {
+	data := call.Argument(0).Export()
+	if data == nil {
+		return r.ToValue(false)
+	}
+	bs, ok := data.(goja.ArrayBuffer)
+	if !ok {
+		return r.ToValue(false)
+	}
+	return r.ToValue(a.api.WriteRaw(bs.Bytes()))
+}
+
+func (a *SendAPI) WriteEscaped(call goja.FunctionCall, r *goja.Runtime) goja.Value {
+	data := call.Argument(0).Export()
+	if data == nil {
+		return r.ToValue(false)
+	}
+	bs, ok := data.(goja.ArrayBuffer)
+	if !ok {
+		return r.ToValue(false)
+	}
+	return r.ToValue(a.api.WriteEscaped(bs.Bytes()))
+}
+
 type BinaryAPI struct {
 	api *connect.BinaryAPI
 }

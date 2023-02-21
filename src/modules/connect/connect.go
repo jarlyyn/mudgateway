@@ -26,8 +26,8 @@ type Connect struct {
 	MainRaw                     net.Conn
 	MainServer                  string
 	Port                        string
-	InstanceConnect             *bufio.ReadWriter
-	InstanceRaw                 net.Conn
+	LocalServer                 *bufio.ReadWriter
+	LocalRaw                    net.Conn
 	Current                     atomic.Value
 	ID                          string
 	User                        atomic.Value

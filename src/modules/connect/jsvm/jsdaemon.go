@@ -83,6 +83,11 @@ func (d *JSDaemon) OnDaemonInitConnect(c *connect.Connect) {
 				Connect: c,
 			},
 		}),
+		send: runtime.ToValue(&SendAPI{
+			&connect.SendAPI{
+				Connect: c,
+			},
+		}),
 	}
 	vm.runtime.Set("Binary", &BinaryAPI{
 		api: &connect.BinaryAPI{

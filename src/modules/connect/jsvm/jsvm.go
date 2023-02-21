@@ -13,6 +13,7 @@ type JSVM struct {
 	Lock    sync.Mutex
 	runtime *goja.Runtime
 	output  goja.Value
+	send    goja.Value
 	connect.NopVM
 	Connect *connect.Connect
 }
@@ -78,7 +79,7 @@ func (v *JSVM) OnConnectUserCommand(b *connect.Block) bool {
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserCommand[int(b.Command)], b.Command, b.Opt, v.runtime.NewArrayBuffer(b.Data))
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserCommand[int(b.Command)], v.send, b.Command, b.Opt, v.runtime.NewArrayBuffer(b.Data))
 	if result == nil {
 		return false
 	}
@@ -90,7 +91,7 @@ func (v *JSVM) OnConnectUserInput(data []byte) bool {
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserInput, v.runtime.NewArrayBuffer(data))
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserInput, v.send, v.runtime.NewArrayBuffer(data))
 	if result == nil {
 		return false
 	}
@@ -126,7 +127,7 @@ func (v *JSVM) OnConnectUserSubNegotiation(b *connect.Block) bool {
 	}
 	v.Lock.Lock()
 	defer v.Lock.Unlock()
-	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserSubNegotiation[int(b.Opt)], b.Opt, v.runtime.NewArrayBuffer(b.Data))
+	result := v.Call(v.Connect.Manager.ScriptConfig.OnConnectUserSubNegotiation[int(b.Opt)], v.send, b.Opt, v.runtime.NewArrayBuffer(b.Data))
 	if result == nil {
 		return false
 	}

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #settings
-binname="mudgateway"
-buildername="build-linux.sh"
+binname="mudgateway.exe"
+buildername="build-win.sh"
 
 
 if [ -z "$1" ]

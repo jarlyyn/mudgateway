@@ -214,6 +214,30 @@ func (a *OutputAPI) WriteEscaped(data []byte) bool {
 	return true
 }
 
+type SendAPI struct {
+	Connect *Connect
+}
+
+func (a *SendAPI) WriteRaw(data []byte) bool {
+	b := NewRawBlock(data)
+	err := a.Connect.SendBlockToServer(b)
+	if err != nil {
+		a.Connect.OnError(err)
+		return false
+	}
+	return true
+}
+
+func (a *SendAPI) WriteEscaped(data []byte) bool {
+	b := NewTextBlock(data)
+	err := a.Connect.SendBlockToServer(b)
+	if err != nil {
+		a.Connect.OnError(err)
+		return false
+	}
+	return true
+}
+
 type BinaryAPI struct {
 	Manager *Manager
 }

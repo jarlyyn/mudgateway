@@ -15,7 +15,10 @@ import (
 	"github.com/herb-go/util"
 )
 
-//Connect 连接对象
+const ConnectModeMainServer = 0
+const ConnectModeLocalServer = 1
+
+// Connect 连接对象
 type Connect struct {
 	//连接级锁
 	Lock                        sync.Mutex
@@ -45,6 +48,21 @@ type Connect struct {
 	userinputBuffer             *bytes.Buffer
 }
 
+func (c *Connect) GetMod() int {
+	v := c.Current.Load()
+	if v == nil {
+		return ConnectModeMainServer
+	}
+	conn, ok := v.(*bufio.ReadWriter)
+	if !ok {
+		return ConnectModeMainServer
+	}
+	if conn == c.MainConnect {
+		return ConnectModeMainServer
+	}
+	return ConnectModeLocalServer
+
+}
 func (c *Connect) GetTags() []string {
 	result := []string{}
 	c.Tags.Range(func(key, value interface{}) bool {
@@ -110,6 +128,7 @@ func (c *Connect) Start() (bool, error) {
 		return false, nil
 	}
 	c.MainConnect = bufio.NewReadWriter(bufio.NewReader(main), bufio.NewWriter(main))
+	c.MainRaw = main
 	c.Current.Store(c.MainConnect)
 	t := c.Manager.ScriptConfig.DisplayBufferFlushIntervalInMilliseconds
 	if t == 0 {
@@ -127,8 +146,8 @@ func (c *Connect) Start() (bool, error) {
 func (c *Connect) Tick() {
 	for {
 		select {
-		case _, isClose := <-c.displayBufferTicker.C:
-			if isClose {
+		case _, more := <-c.displayBufferTicker.C:
+			if more {
 				return
 			} else {
 				go c.OnTick()
@@ -138,11 +157,15 @@ func (c *Connect) Tick() {
 	}
 }
 func (c *Connect) Close() (bool, error) {
-	if c.VM.OnConnectClose() {
-		return false, nil
-	}
 	c.Lock.Lock()
 	defer c.Lock.Unlock()
+	if c.InputRaw == nil {
+		return false, nil
+	}
+	err := c.InputRaw.Close()
+	if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 func (c *Connect) ServerClosed() {
@@ -154,6 +177,7 @@ func (c *Connect) ServerClosed() {
 	c.InputRaw = nil
 	c.Input = nil
 	if c.MainRaw != nil {
+		c.VM.OnConnectClosed()
 		c.MainRaw.Close()
 	}
 	c.MainRaw = nil
@@ -375,7 +399,7 @@ func (c *Connect) ListenMainServer() {
 		}
 		switch b.Type {
 		case BlockTypeCommand, BlockTypeCommandNoOpt:
-			result := c.VM.OnConnectServerCommand(b)
+			result := c.VM.OnConnectMainServerCommand(b)
 			if !result {
 				err := c.sendBlockToUser(b)
 				if err != nil {
@@ -388,7 +412,7 @@ func (c *Connect) ListenMainServer() {
 			}
 		case BlockTypeSubNegotiation:
 			if !c.Manager.ScriptConfig.ReservedCommands[b.Opt] && !c.Manager.ScriptConfig.ControlCommand[b.Opt] {
-				result := c.VM.OnConnectServerSubNegotiation(b)
+				result := c.VM.OnConnectMainServerSubNegotiation(b)
 				if !result {
 					err := c.sendBlockToUser(b)
 					if err != nil {

@@ -20,9 +20,11 @@ type ScriptFile struct {
 	OnConnectClose                           string
 	OnConnectUserInput                       string
 	OnConnectUserCommand                     map[string]string
-	OnConnectServerCommand                   map[string]string
 	OnConnectUserSubNegotiation              map[string]string
-	OnConnectServerSubNegotiation            map[string]string
+	OnConnectMainServerCommand               map[string]string
+	OnConnectMainServerSubNegotiation        map[string]string
+	OnConnectLocalServerCommand              map[string]string
+	OnConnectLocalServerSubNegotiation       map[string]string
 	OnDaemonStart                            string
 	OnDaemonClose                            string
 	OnDaemonConnectStarted                   string
@@ -42,9 +44,11 @@ type ScriptConfig struct {
 	OnConnectClose                           string
 	OnConnectUserInput                       string
 	OnConnectUserCommand                     map[int]string
-	OnConnectServerCommand                   map[int]string
 	OnConnectUserSubNegotiation              map[int]string
-	OnConnectServerSubNegotiation            map[int]string
+	OnConnectMainServerCommand               map[int]string
+	OnConnectMainServerSubNegotiation        map[int]string
+	OnConnectLocalServerCommand              map[int]string
+	OnConnectLocalServerSubNegotiation       map[int]string
 	OnDaemonStart                            string
 	OnDaemonClose                            string
 	OnDaemonConnectStarted                   string
@@ -55,12 +59,14 @@ type ScriptConfig struct {
 
 func NewScriptConfig() *ScriptConfig {
 	return &ScriptConfig{
-		ControlCommand:                map[byte]bool{},
-		ReservedCommands:              map[byte]bool{},
-		OnConnectUserCommand:          map[int]string{},
-		OnConnectServerCommand:        map[int]string{},
-		OnConnectUserSubNegotiation:   map[int]string{},
-		OnConnectServerSubNegotiation: map[int]string{},
+		ControlCommand:                     map[byte]bool{},
+		ReservedCommands:                   map[byte]bool{},
+		OnConnectUserCommand:               map[int]string{},
+		OnConnectUserSubNegotiation:        map[int]string{},
+		OnConnectMainServerCommand:         map[int]string{},
+		OnConnectMainServerSubNegotiation:  map[int]string{},
+		OnConnectLocalServerCommand:        map[int]string{},
+		OnConnectLocalServerSubNegotiation: map[int]string{},
 	}
 }
 func MustConvert(c *ScriptFile) *ScriptConfig {
@@ -75,9 +81,11 @@ func MustConvert(c *ScriptFile) *ScriptConfig {
 		OnConnectClose:                           c.OnConnectClose,
 		OnConnectUserInput:                       c.OnConnectUserInput,
 		OnConnectUserCommand:                     map[int]string{},
-		OnConnectServerCommand:                   map[int]string{},
 		OnConnectUserSubNegotiation:              map[int]string{},
-		OnConnectServerSubNegotiation:            map[int]string{},
+		OnConnectMainServerCommand:               map[int]string{},
+		OnConnectMainServerSubNegotiation:        map[int]string{},
+		OnConnectLocalServerCommand:              map[int]string{},
+		OnConnectLocalServerSubNegotiation:       map[int]string{},
 		OnDaemonStart:                            c.OnDaemonStart,
 		OnDaemonClose:                            c.OnDaemonClose,
 		OnDaemonConnectStarted:                   c.OnDaemonConnectStarted,
@@ -106,12 +114,19 @@ func MustConvert(c *ScriptFile) *ScriptConfig {
 		}
 		config.OnConnectUserCommand[i] = v
 	}
-	for k, v := range c.OnConnectServerCommand {
+	for k, v := range c.OnConnectMainServerCommand {
 		i, err := strconv.Atoi(k)
 		if err != nil {
 			panic(err)
 		}
-		config.OnConnectServerCommand[i] = v
+		config.OnConnectMainServerCommand[i] = v
+	}
+	for k, v := range c.OnConnectLocalServerCommand {
+		i, err := strconv.Atoi(k)
+		if err != nil {
+			panic(err)
+		}
+		config.OnConnectLocalServerCommand[i] = v
 	}
 	for k, v := range c.OnConnectUserSubNegotiation {
 		i, err := strconv.Atoi(k)
@@ -120,12 +135,19 @@ func MustConvert(c *ScriptFile) *ScriptConfig {
 		}
 		config.OnConnectUserSubNegotiation[i] = v
 	}
-	for k, v := range c.OnConnectServerSubNegotiation {
+	for k, v := range c.OnConnectMainServerSubNegotiation {
 		i, err := strconv.Atoi(k)
 		if err != nil {
 			panic(err)
 		}
-		config.OnConnectServerSubNegotiation[i] = v
+		config.OnConnectMainServerSubNegotiation[i] = v
+	}
+	for k, v := range c.OnConnectLocalServerSubNegotiation {
+		i, err := strconv.Atoi(k)
+		if err != nil {
+			panic(err)
+		}
+		config.OnConnectLocalServerSubNegotiation[i] = v
 	}
 	return config
 }
